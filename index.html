@@ -138,31 +138,51 @@
   #mapCardTimeControl .map-mini-tick span:last-child{ visibility:hidden; }
   #mapCardTimeControl .map-mini-tick.active span:last-child{ visibility:visible; }
 
-  /* ---------- MASONRY BOARD ---------- */
+  /* ---------- MANUAL BOARD LAYOUT（三欄手動分組，不用瀏覽器自動分欄） ---------- */
   html{ overflow-x: hidden; }
   .page{ overflow-x: hidden; }
   .grid{
-    column-count: 3;
-    column-gap: 16px;
+    display:flex;
+    gap:16px;
+    align-items:flex-start;
   }
+  .grid .col{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+    min-width:0;
+  }
+  .col-left{ flex:1 1 0; }
+  .mid-right-region{
+    flex:2 1 0;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+    min-width:0;
+  }
+  .mid-right-row{
+    display:flex;
+    gap:16px;
+    align-items:flex-start;
+  }
+  .mid-right-row .col{ flex:1 1 0; }
+  .grid .card{ width:100%; margin-bottom:0; }
   @media (max-width: 1180px){
-    .grid{ column-count: 2; }
+    .grid{ flex-direction:column; }
+    .mid-right-region{ flex:1 1 auto; }
   }
   @media (max-width: 720px){
-    .grid{ column-count: 1; }
-  }
-  .grid .card{
-    break-inside: avoid;
-    -webkit-column-break-inside: avoid;
-    margin-bottom: 16px;
-    width: 100%;
+    .mid-right-row{ flex-direction:column; }
   }
   .bottom-row{
-    display:flex; gap:16px; flex-wrap:wrap; margin-top:0;
+    display:flex; gap:16px; flex-wrap:wrap; margin-top:16px; align-items:flex-start;
   }
   .bottom-row .card{ min-width:0; }
-  #card9{ flex: 2 1 0; }
-  #card10{ flex: 1 1 0; }
+  #card9{ flex: 1 1 55%; transition: flex-basis .15s ease; }
+  .bottom-row-stack{ flex: 1 1 40%; display:flex; flex-direction:column; gap:16px; min-width:0; }
+  .bottom-row.lu-collapsed #card9{ flex: 1 1 0; } /* 土地利用單時期沒有內容時縮回一般欄寬（單村單時期時它會留在這裡，不會被搬去左欄） */
+  .bottom-row.lu-collapsed .bottom-row-stack{ flex: 2 1 0; flex-direction:row; } /* 單時期時氣象、觀光不用疊在一起了，改成各佔一欄橫排（總覽單時期時土地利用已搬去左欄，這裡會自動撐滿寬度） */
+  .bottom-row.lu-collapsed .bottom-row-stack .card{ flex: 1 1 0; }
   @media (max-width: 720px){
     .bottom-row{ flex-direction:column; }
   }
@@ -310,12 +330,9 @@
   .stat-grid.wide-depend{ grid-template-columns: repeat(3, 1fr); }
   .stat-grid.stat-grid-full{ grid-template-columns: repeat(2, 1fr); }
   .stat-grid.stat-grid-full .mini-canvas-wrap{ height: 130px; }
-  .card3-wide-slot{ max-width: 66%; }
+  .card3-wide-slot{ width: 100%; }
   .card3-wide-slot:empty{ display:none; }
-  .card3-wide-slot .card{ margin-bottom:16px; }
-  @media (max-width: 1180px){
-    .card3-wide-slot{ max-width: 100%; }
-  }
+  .card3-wide-slot .card{ margin-bottom:0; }
   .compare-widget{ position:relative; }
   .compare-toggle{
     border:1px solid var(--line-strong); background: var(--panel-2); color: var(--text-dim);
@@ -470,6 +487,7 @@
 
   <div class="grid">
 
+    <div class="col col-left">
     <div class="card" id="card1">
       <div class="card-head"><div class="badge">①</div><h3>男女人口</h3><div class="card-head-actions"><button class="expand-btn" type="button" title="全螢幕">⛶</button><button class="info-btn card-info-btn" type="button" data-info="src1">i</button></div></div>
       <div class="info-detail card-info-detail" id="info-src1" style="display:none">資料來源：社會經濟資料開放平台－臺東縣村里人口統計</div>
@@ -486,7 +504,20 @@
       <div style="padding:0 16px 14px"><div class="legend-row" id="body2note"></div></div>
     </div>
 
-    <div class="card" id="card3">
+    <div class="card" id="card6">
+      <div class="card-head"><div class="badge">⑥</div><h3>人口增減</h3><div class="card-head-actions"><button class="expand-btn" type="button" title="全螢幕">⛶</button><button class="info-btn card-info-btn" type="button" data-info="src6">i</button></div></div>
+      <div class="info-detail card-info-detail" id="info-src6" style="display:none">資料來源：<br>・社會經濟資料開放平台－臺東縣村里出生統計<br>・社會經濟資料開放平台－臺東縣村里死亡統計<br>・社會經濟資料開放平台－臺東縣村里人口消長統計<br>※社會增加＝遷入－遷出。<br>※總增加＝自然增加＋社會增加。因官方「社會增加」與遷入減遷出略有落差，為求全表數字邏輯一致改採自算，故本頁總增加與官方公布值可能有微小出入。<br>※鄉內遷徙淨增＝鄉內遷入－鄉內遷出。<br>※「總覽」狀態為公平比較三村（人口規模不同），改以「率」（每千人）呈現，計算方式為該項人數 ÷ 當年人口 × 1000；瀑布圖仍維持實際人數，並於總增減／自然增加／社會增加頁籤下方附上各村對應的率。</div>
+      <div class="card-body"><div id="body6"></div></div>
+    </div>
+    <div id="cardMed-landing" style="display:none"></div>
+    <div id="card9-landing" style="display:none"></div>
+    </div>
+
+    <div class="mid-right-region">
+      <div class="card3-wide-slot" id="card3WideSlot"></div>
+      <div class="mid-right-row">
+        <div class="col col-mid">
+        <div class="card" id="card3">
       <div class="card-head"><div class="badge">③</div><h3>人口指標</h3><div id="compareWidgetSlot" style="display:none; margin-left:14px;"></div><div class="card-head-actions"><button class="expand-btn" type="button" title="全螢幕">⛶</button><button class="info-btn card-info-btn" type="button" data-info="src3">i</button></div></div>
       <div class="info-detail card-info-detail" id="info-src3" style="display:none">資料來源：社會經濟資料開放平台－臺東縣村里人口指標（戶數取自臺東縣村里人口統計）</div>
       <div class="card-body">
@@ -505,7 +536,16 @@
       <div class="card-body" id="body0" style="height:550px; padding:0;"></div>
     </div>
 
-    <div class="card" id="card4">
+    <div class="card" id="card7">
+      <div class="card-head"><div class="badge">⑦</div><h3>獨居老人</h3><div class="card-head-actions"><button class="expand-btn" type="button" title="全螢幕">⛶</button><button class="info-btn card-info-btn" type="button" data-info="src7">i</button></div></div>
+      <div class="info-detail card-info-detail" id="info-src7" style="display:none">資料來源：社會經濟資料開放平台－臺東縣村里行政區獨居老人分析統計<br>※原始資料僅有 2020 年一次調查，故僅在「單時期」且年份為 2020 年時顯示。<br>※其餘狀態暫無對應資料。<br>※總覽單時期的比例，分母為該村 2020 年 65 歲以上人口數。</div>
+      <div class="card-body"><div id="body7"></div></div>
+    </div>
+    <div id="card7-anchor" style="display:none"></div>
+        </div>
+
+        <div class="col col-right">
+        <div class="card" id="card4">
       <div class="card-head"><div class="badge">④</div><h3>教育程度</h3><div class="card-head-actions"><button class="expand-btn" type="button" title="全螢幕">⛶</button><button class="info-btn card-info-btn" type="button" data-info="src4">i</button></div></div>
       <div class="info-detail card-info-detail" id="info-src4" style="display:none">資料來源：社會經濟資料開放平台－臺東縣村里15歲以上人口五歲年齡組教育程度統計<br>※原始資料為五歲年齡組，考慮到呈現的可讀性及便利性，將其合併為十歲年齡組呈現。</div>
       <div class="card-body"><div id="body4"></div></div>
@@ -517,32 +557,23 @@
       <div class="card-body"><div id="body5"></div></div>
     </div>
 
-    <div class="card" id="card6">
-      <div class="card-head"><div class="badge">⑥</div><h3>人口增減</h3><div class="card-head-actions"><button class="expand-btn" type="button" title="全螢幕">⛶</button><button class="info-btn card-info-btn" type="button" data-info="src6">i</button></div></div>
-      <div class="info-detail card-info-detail" id="info-src6" style="display:none">資料來源：<br>・社會經濟資料開放平台－臺東縣村里出生統計<br>・社會經濟資料開放平台－臺東縣村里死亡統計<br>・社會經濟資料開放平台－臺東縣村里人口消長統計<br>※社會增加＝遷入－遷出。<br>※總增加＝自然增加＋社會增加。因官方「社會增加」與遷入減遷出略有落差，為求全表數字邏輯一致改採自算，故本頁總增加與官方公布值可能有微小出入。<br>※鄉內遷徙淨增＝鄉內遷入－鄉內遷出。<br>※「總覽」狀態為公平比較三村（人口規模不同），改以「率」（每千人）呈現，計算方式為該項人數 ÷ 當年人口 × 1000；瀑布圖仍維持實際人數，並於總增減／自然增加／社會增加頁籤下方附上各村對應的率。</div>
-      <div class="card-body"><div id="body6"></div></div>
-    </div>
-
-    <div class="card" id="card7">
-      <div class="card-head"><div class="badge">⑦</div><h3>獨居老人</h3><div class="card-head-actions"><button class="expand-btn" type="button" title="全螢幕">⛶</button><button class="info-btn card-info-btn" type="button" data-info="src7">i</button></div></div>
-      <div class="info-detail card-info-detail" id="info-src7" style="display:none">資料來源：社會經濟資料開放平台－臺東縣村里行政區獨居老人分析統計<br>※原始資料僅有 2020 年一次調查，故僅在「單時期」且年份為 2020 年時顯示。<br>※其餘狀態暫無對應資料。<br>※總覽單時期的比例，分母為該村 2020 年 65 歲以上人口數。</div>
-      <div class="card-body"><div id="body7"></div></div>
-    </div>
-
     <div class="card" id="card8">
       <div class="card-head"><div class="badge">⑧</div><h3>屋齡分布</h3><div class="card-head-actions"><button class="expand-btn" type="button" title="全螢幕">⛶</button><button class="info-btn card-info-btn" type="button" data-info="src8">i</button></div></div>
       <div class="info-detail card-info-detail" id="info-src8" style="display:none">資料來源：社會經濟資料開放平台－臺東縣村里臺東縣行政區房屋屋齡統計<br>※原始資料僅到 2015-2019 年（無 2020 年後資料），故時間軸超過 2019 年時本卡片無法顯示。<br>※公館村部分年份原始資料為 0（可能為未申報或資料缺漏），暫以無資料處理。</div>
       <div class="card-body"><div id="body8"></div></div>
     </div>
+    <div id="card8-anchor" style="display:none"></div>
 
     <div class="card" id="cardMed">
       <div class="card-head"><div class="badge">⑨</div><h3>醫療機構</h3><div class="card-head-actions"><button class="expand-btn" type="button" title="全螢幕">⛶</button><button class="info-btn card-info-btn" type="button" data-info="srcMed">i</button></div></div>
       <div class="info-detail card-info-detail" id="info-srcMed" style="display:none">資料來源：<br>・社會經濟資料開放平台－臺東縣村里醫療機構概況統計<br>・診所喵－台東縣綠島鄉診所<br>※此指標為現況統計，無時間序列，故「多時期」狀態顯示的數值與「單時期」相同。</div>
       <div class="card-body"><div id="bodyMed"></div></div>
     </div>
+    <div id="cardMed-anchor" style="display:none"></div>
+        </div>
+      </div>
+    </div>
   </div>
-
-  <div class="card3-wide-slot" id="card3WideSlot"></div>
 
   <div class="bottom-row">
 <div class="card" id="card9">
@@ -550,7 +581,9 @@
       <div class="info-detail card-info-detail" id="info-src10" style="display:none">資料來源：內政部國土利用調查成果圖資（綠島鄉，107 年與 112 年兩期）<br>※圖層透過實驗室 Portal 發布，僅在「多時期」狀態顯示，左右拖曳可比較兩期土地利用分布。</div>
       <div class="card-body"><div id="body9"></div></div>
     </div>
+    <div id="card9-anchor" style="display:none"></div>
 
+    <div class="bottom-row-stack">
     <div class="card" id="card10">
       <div class="card-head"><div class="badge">⑪</div><h3>氣象資料－自動氣象站綠島站</h3><div class="card-head-actions"><button class="expand-btn" type="button" title="全螢幕">⛶</button><button class="info-btn card-info-btn" type="button" data-info="src11">i</button></div></div>
       <div class="info-detail card-info-detail" id="info-src11" style="display:none">資料來源：CODiS－綠島自動氣象站、LTSER LYUDAO－海洋研究站氣象資料<br>※由於 CODiS 綠島自動氣象站 2023/1-2024/7 無氣溫資料，因此 2023、2024 年皆使用 LTSER LYUDAO 之每日氣象資料－海洋研究站資料代替（註：資料來源不同僅供參考）。<br>※本站為綠島鄉單一測站資料，不分村里，僅在「總覽」狀態顯示。<br>※氣溫資料缺值月份：2019 年 4、5 月；2023 年 1、2、12 月。</div>
@@ -561,6 +594,7 @@
       <div class="card-head"><div class="badge">⑫</div><h3>觀光人次</h3><div class="card-head-actions"><button class="expand-btn" type="button" title="全螢幕">⛶</button><button class="info-btn card-info-btn" type="button" data-info="src12">i</button></div></div>
       <div class="info-detail card-info-detail" id="info-src12" style="display:none">資料來源：交通部觀光署觀光統計資料庫（綠島遊憩區）<br>※本資料為綠島整體遊憩區人次，不分村里，僅在「總覽」狀態顯示。</div>
       <div class="card-body"><div id="body12"></div></div>
+    </div>
     </div>
   </div>
 
@@ -1329,6 +1363,31 @@ function render3(){
     if(card3El.parentNode !== slot3) slot3.appendChild(card3El);
   } else {
     if(card3El.parentNode !== anchor3.parentNode) anchor3.parentNode.insertBefore(card3El, anchor3);
+  }
+
+  // ⑦獨居老人只有「單時期＋2020年」才有內容，多時期永遠是空提示卡，卡在中欄（跟地圖同欄）會拖出一大塊空白；
+  // ⑧屋齡分布則相反，多時期反而有實際折線圖內容。所以多時期時把兩張卡對調，讓中欄維持有內容可看，單時期再換回來。
+  const card7El = document.getElementById("card7");
+  const card8El = document.getElementById("card8");
+  const anchor7 = document.getElementById("card7-anchor");
+  const anchor8 = document.getElementById("card8-anchor");
+  if(isMulti()){
+    if(card8El.parentNode !== anchor7.parentNode) anchor7.parentNode.insertBefore(card8El, anchor7);
+    if(card7El.parentNode !== anchor8.parentNode) anchor8.parentNode.insertBefore(card7El, anchor8);
+  } else {
+    if(card7El.parentNode !== anchor7.parentNode) anchor7.parentNode.insertBefore(card7El, anchor7);
+    if(card8El.parentNode !== anchor8.parentNode) anchor8.parentNode.insertBefore(card8El, anchor8);
+  }
+
+  // ⑨醫療機構內容短、且不受時期影響（多時期跟單時期數值一樣），多時期時右欄變比較滿（多了⑦），
+  // 左欄（①②⑥）反而常常在地圖那欄還沒結束前就先排完、留一大塊空白，所以多時期時把⑨搬去墊在左欄最下面。
+  const cardMedEl = document.getElementById("cardMed");
+  const anchorMed = document.getElementById("cardMed-anchor");
+  const landingMed = document.getElementById("cardMed-landing");
+  if(isMulti()){
+    if(cardMedEl.parentNode !== landingMed.parentNode) landingMed.parentNode.insertBefore(cardMedEl, landingMed);
+  } else {
+    if(cardMedEl.parentNode !== anchorMed.parentNode) anchorMed.parentNode.insertBefore(cardMedEl, anchorMed);
   }
 
 
@@ -2225,6 +2284,20 @@ const VILLAGE_BOUNDARY_URL = "https://igisportal.geomatics.ncku.edu.tw/server/re
 let luView = null, luSwipe = null, luLayer107 = null, luLayer112 = null;
 function render9(){
   const el = document.getElementById("body9");
+  // 只有多時期才有實際內容，單時期是空提示卡，這時候縮回一般欄寬，不要繼續佔一大塊版面
+  const bottomRowEl = document.querySelector(".bottom-row");
+  if(bottomRowEl) bottomRowEl.classList.toggle("lu-collapsed", !isMulti());
+  // 單時期時土地利用只是一張提示卡，但只有「總覽＋單時期」才搬去左欄墊底（那裡才有明顯空位）；
+  // 單村＋單時期維持留在 bottom-row 原地（一樣是縮窄的提示卡，只是不搬家）。
+  // 多時期有真的地圖內容時，不管總覽或單村都搬回原本 bottom-row 的位置（維持寬版）
+  const card9El = document.getElementById("card9");
+  const anchor9 = document.getElementById("card9-anchor");
+  const landing9 = document.getElementById("card9-landing");
+  if(!isMulti() && isOverview()){
+    if(card9El.parentNode !== landing9.parentNode) landing9.parentNode.insertBefore(card9El, landing9);
+  } else {
+    if(card9El.parentNode !== anchor9.parentNode) anchor9.parentNode.insertBefore(card9El, anchor9);
+  }
   if(isMulti()){
     if(luView){ return; } // 地圖已經初始化過，維持現狀即可，不重新建立
     el.innerHTML = `<div style="position:relative">
