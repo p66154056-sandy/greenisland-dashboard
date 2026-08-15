@@ -180,8 +180,7 @@
   .bottom-row .card{ min-width:0; }
   #card9{ flex: 1 1 55%; transition: flex-basis .15s ease; }
   .bottom-row-stack{ flex: 1 1 40%; display:flex; flex-direction:column; gap:16px; min-width:0; }
-  .bottom-row.lu-collapsed #card9{ flex: 1 1 0; } /* 土地利用單時期沒有內容時縮回一般欄寬（單村單時期時它會留在這裡，不會被搬去左欄） */
-  .bottom-row.lu-collapsed .bottom-row-stack{ flex: 2 1 0; flex-direction:row; } /* 單時期時氣象、觀光不用疊在一起了，改成各佔一欄橫排（總覽單時期時土地利用已搬去左欄，這裡會自動撐滿寬度） */
+  .bottom-row.lu-collapsed .bottom-row-stack{ flex: 1 1 100%; flex-direction:row; } /* 單時期時氣象、觀光（跟單村時搬走後剩下的內容）改成橫排，此時土地利用已搬去左欄，這裡會自動撐滿寬度 */
   .bottom-row.lu-collapsed .bottom-row-stack .card{ flex: 1 1 0; }
   @media (max-width: 720px){
     .bottom-row{ flex-direction:column; }
@@ -542,6 +541,7 @@
       <div class="card-body"><div id="body7"></div></div>
     </div>
     <div id="card7-anchor" style="display:none"></div>
+    <div id="card10-landing" style="display:none"></div>
         </div>
 
         <div class="col col-right">
@@ -570,6 +570,7 @@
       <div class="card-body"><div id="bodyMed"></div></div>
     </div>
     <div id="cardMed-anchor" style="display:none"></div>
+    <div id="card12-landing" style="display:none"></div>
         </div>
       </div>
     </div>
@@ -589,12 +590,14 @@
       <div class="info-detail card-info-detail" id="info-src11" style="display:none">資料來源：CODiS－綠島自動氣象站、LTSER LYUDAO－海洋研究站氣象資料<br>※由於 CODiS 綠島自動氣象站 2023/1-2024/7 無氣溫資料，因此 2023、2024 年皆使用 LTSER LYUDAO 之每日氣象資料－海洋研究站資料代替（註：資料來源不同僅供參考）。<br>※本站為綠島鄉單一測站資料，不分村里，僅在「總覽」狀態顯示。<br>※氣溫資料缺值月份：2019 年 4、5 月；2023 年 1、2、12 月。</div>
       <div class="card-body"><div id="body10"></div></div>
     </div>
+    <div id="card10-anchor" style="display:none"></div>
 
     <div class="card" id="card12">
       <div class="card-head"><div class="badge">⑫</div><h3>觀光人次</h3><div class="card-head-actions"><button class="expand-btn" type="button" title="全螢幕">⛶</button><button class="info-btn card-info-btn" type="button" data-info="src12">i</button></div></div>
       <div class="info-detail card-info-detail" id="info-src12" style="display:none">資料來源：交通部觀光署觀光統計資料庫（綠島遊憩區）<br>※本資料為綠島整體遊憩區人次，不分村里，僅在「總覽」狀態顯示。</div>
       <div class="card-body"><div id="body12"></div></div>
     </div>
+    <div id="card12-anchor" style="display:none"></div>
     </div>
   </div>
 
@@ -2287,13 +2290,12 @@ function render9(){
   // 只有多時期才有實際內容，單時期是空提示卡，這時候縮回一般欄寬，不要繼續佔一大塊版面
   const bottomRowEl = document.querySelector(".bottom-row");
   if(bottomRowEl) bottomRowEl.classList.toggle("lu-collapsed", !isMulti());
-  // 單時期時土地利用只是一張提示卡，但只有「總覽＋單時期」才搬去左欄墊底（那裡才有明顯空位）；
-  // 單村＋單時期維持留在 bottom-row 原地（一樣是縮窄的提示卡，只是不搬家）。
-  // 多時期有真的地圖內容時，不管總覽或單村都搬回原本 bottom-row 的位置（維持寬版）
+  // 單時期時土地利用只是一張提示卡，不管總覽還是單村都搬去左欄墊底，把①②⑥後面那塊空位填滿；
+  // 多時期有真的地圖內容時搬回原本 bottom-row 的位置（維持寬版）
   const card9El = document.getElementById("card9");
   const anchor9 = document.getElementById("card9-anchor");
   const landing9 = document.getElementById("card9-landing");
-  if(!isMulti() && isOverview()){
+  if(!isMulti()){
     if(card9El.parentNode !== landing9.parentNode) landing9.parentNode.insertBefore(card9El, landing9);
   } else {
     if(card9El.parentNode !== anchor9.parentNode) anchor9.parentNode.insertBefore(card9El, anchor9);
@@ -3094,6 +3096,16 @@ function renderMapCard(){
 
 function render10(){
   const el = document.getElementById("body10");
+  // 單村單時期時氣象資料只是一張提示卡（無分村里資料），這時候搬去中欄墊在獨居老人後面，填滿地圖那欄底下的空位；
+  // 其餘狀態（總覽、或多時期）搬回原本 bottom-row 的位置
+  const card10El = document.getElementById("card10");
+  const anchor10 = document.getElementById("card10-anchor");
+  const landing10 = document.getElementById("card10-landing");
+  if(!isMulti() && !isOverview()){
+    if(card10El.parentNode !== landing10.parentNode) landing10.parentNode.insertBefore(card10El, landing10);
+  } else {
+    if(card10El.parentNode !== anchor10.parentNode) anchor10.parentNode.insertBefore(card10El, anchor10);
+  }
   if(!isOverview()){
     el.innerHTML = `<div class="placeholder-x"><div class="x-mark">✕</div>氣象站無分村里資料<br>請切換至「總覽（三村）」查看</div>`;
     return;
@@ -3132,6 +3144,16 @@ function render10(){
 
 function render12(){
   const el = document.getElementById("body12");
+  // 單村單時期時觀光人次只是一張提示卡（無分村里資料），這時候搬去右欄墊在醫療機構後面，填滿空位；
+  // 其餘狀態（總覽、或多時期）搬回原本 bottom-row 的位置
+  const card12El = document.getElementById("card12");
+  const anchor12 = document.getElementById("card12-anchor");
+  const landing12 = document.getElementById("card12-landing");
+  if(!isMulti() && !isOverview()){
+    if(card12El.parentNode !== landing12.parentNode) landing12.parentNode.insertBefore(card12El, landing12);
+  } else {
+    if(card12El.parentNode !== anchor12.parentNode) anchor12.parentNode.insertBefore(card12El, anchor12);
+  }
   if(!isOverview()){
     el.innerHTML = `<div class="placeholder-x"><div class="x-mark">✕</div>觀光人次無分村里資料<br>請切換至「總覽（三村）」查看</div>`;
     return;
